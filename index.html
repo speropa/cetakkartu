@@ -5,72 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cetak Kartu Peserta Ujian</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Memuat pustaka html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
     <style>
-        /* Variabel CSS untuk warna dan estetika */
         :root {
-            --header-bg-color: #e67e22; /* Warna latar belakang header (oranye) */
-            --header-text-color: #ffffff; /* Warna teks header (putih) */
-            --main-text-color: #000000; /* Warna teks utama (hitam) */
-            --dark-blue: #2c3e50; /* Warna biru gelap */
-            --border-color: #000000; /* Warna border (hitam) */
-            --light-text: #666; /* Warna teks terang abu-abu */
-            --ribbon-bg-color: #6c7a89; /* Warna latar belakang pita (abu-abu kebiruan) */
-            --button-primary-bg: #3498db; /* Warna latar belakang tombol utama (biru) */
-            --button-primary-hover: #2980b9; /* Warna hover tombol utama (biru lebih gelap) */
-            --button-secondary-bg: #e74c3c; /* Warna latar belakang tombol sekunder (merah) */
-            --button-secondary-hover: #c0392b; /* Warna hover tombol sekunder (merah lebih gelap) */
-            --button-disabled-bg: #bdc3c7; /* Warna latar belakang tombol nonaktif (abu-abu) */
+            --header-bg-color: #e67e22;
+            --header-text-color: #ffffff;
+            --main-text-color: #000000;
+            --dark-blue: #2c3e50;
+            --border-color: #000000;
+            --light-text: #666;
+            --ribbon-bg-color: #6c7a89;
+            --button-primary-bg: #3498db;
+            --button-primary-hover: #2980b9;
+            --button-secondary-bg: #e74c3c;
+            --button-secondary-hover: #c0392b;
+            --button-disabled-bg: #bdc3c7;
         }
 
-        /* Styling dasar untuk body */
         body {
-            font-family: 'Inter', sans-serif; /* Font utama */
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #e0e0e0; /* Warna latar belakang abu-abu terang */
+            background-color: #e0e0e0;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            min-height: 100vh; /* Tinggi minimal body */
+            min-height: 100vh;
             color: var(--main-text-color);
-            overflow: auto; /* Scroll jika konten melebihi tinggi viewport */
+            overflow: auto;
         }
 
-        /* Container tampilan awal */
-        .initial-view-container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 600px;
-            margin-bottom: 20px;
-        }
-        .initial-view-container .description-text {
-            font-size: 1.1em;
-            margin-bottom: 20px;
-            color: var(--dark-blue);
-            line-height: 1.5;
-        }
-        .action-button {
-            padding: 12px 25px;
-            font-size: 1.1em;
-            cursor: pointer;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            background-color: var(--button-primary-bg);
-            transition: background-color 0.3s;
-        }
-        .action-button:hover {
-            background-color: var(--button-primary-hover);
-        }
-
-        /* Container tampilan utama setelah data dirender */
         .main-app-view-container {
             display: flex;
             flex-direction: column;
@@ -78,7 +43,6 @@
             width: 100%;
         }
 
-        /* Kontrol tombol setelah rendering (Ganti Data, Unduh) */
         .action-buttons-after-render {
             display: flex;
             gap: 15px;
@@ -87,7 +51,6 @@
             flex-wrap: wrap;
         }
 
-        /* Modal Overlay */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -101,20 +64,19 @@
             z-index: 1000;
         }
 
-        /* Konten Modal */
         .modal-content {
             background-color: #ffffff;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.2);
             width: 90%;
-            max-width: 500px; /* Lebar maksimum modal disesuaikan untuk 1 kolom */
+            max-width: 500px;
             position: relative;
             display: flex;
             flex-direction: column;
             gap: 20px;
-            max-height: 90vh; /* Batasi tinggi modal */
-            overflow-y: auto; /* Aktifkan scroll jika konten modal terlalu tinggi */
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .modal-content h2 {
             margin-top: 0;
@@ -138,20 +100,13 @@
             color: #333;
         }
 
-        /* Layout Grid untuk Input di Modal (Sekarang 1 kolom) */
         #modal-input-grid {
             display: grid;
-            grid-template-columns: 1fr; /* UPDATED: Satu kolom */
-            gap: 15px; /* Jarak antar input */
+            grid-template-columns: 1fr;
+            gap: 15px;
             align-items: start;
             justify-items: stretch;
         }
-        /* Kolom Input dalam Modal (Tidak lagi diperlukan 'modal-column' karena 1 kolom) */
-        /* .modal-column {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        } */
         .modal-input-group {
             display: flex;
             flex-direction: column;
@@ -168,62 +123,99 @@
             border: 1px solid #bdc3c7;
             font-size: 1em;
             width: 100%;
-            box-sizing: border-box; /* Pastikan padding dan border masuk dalam lebar */
+            box-sizing: border-box;
         }
-        /* Tombol simpan di modal agar mengambil lebar penuh */
         #modal-save-btn {
             width: 100%;
             margin-top: 15px;
         }
 
-        /* Spinner Overlay */
+        .action-button, .download-button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            transition: background-color 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-button {
+            background-color: var(--button-primary-bg);
+        }
+        .action-button:hover {
+            background-color: var(--button-primary-hover);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        .download-button {
+            background-color: var(--button-secondary-bg);
+        }
+        .download-button:hover { 
+            background-color: var(--button-secondary-hover); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
         .spinner-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 1);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             color: var(--dark-blue);
             font-weight: 600;
-            z-index: 1050; /* Lebih tinggi dari modal content */
-            border-radius: 8px; /* Sesuaikan dengan border-radius modal */
+            z-index: 1050;
+            border-radius: 8px;
+        }
+        #global-download-spinner {
+            background-color: rgba(0,0,0,0.7);
+            color: white;
         }
         .spinner-overlay i {
             color: var(--button-primary-bg);
         }
+        #global-download-spinner i {
+            color: white;
+        }
+        .spinner-overlay #download-progress-percent {
+            font-size: 2em;
+            margin-top: 10px;
+        }
 
-        /* Styling untuk halaman A4 (untuk pratinjau PDF) */
         .page-a4 {
-            width: 21cm; /* Lebar standar A4 */
-            padding: 0.5cm; /* Padding di sekitar konten */
+            width: 21cm;
+            padding: 0.5cm;
             background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.15); /* Bayangan halaman */
-            box-sizing: border-box; /* Padding dan border termasuk dalam dimensi */
+            box-shadow: 0 0 10px rgba(0,0,0,0.15);
+            box-sizing: border-box;
             display: flex;
-            flex-direction: column; /* Mengatur item agar menumpuk secara vertikal */
+            flex-direction: column;
             justify-content: flex-start;
             align-items: center;
             margin-top: 20px;
         }
 
-        /* Grid untuk kartu siswa */
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(2, 10cm); /* 2 kolom, masing-masing 10cm */
-            gap: 0; /* Tidak ada jarak antar kartu */
-            width: 20cm; /* Total lebar grid */
+            grid-template-columns: repeat(2, 10cm);
+            gap: 0;
+            width: 20cm;
             box-sizing: border-box;
         }
 
-        /* Styling untuk setiap kartu siswa */
         .student-card { 
             background: #ffffff; 
-            border: 2px solid var(--border-color); /* Semua sisi memiliki border */
+            border: 2px solid var(--border-color);
             box-sizing: border-box; 
             width: 10cm; 
             height: 5.64cm; 
@@ -233,17 +225,16 @@
             flex-direction: column; 
         } 
          
-        /* Header atas kartu */
         .card-top-header {
             background-color: var(--header-bg-color); 
-            width: calc(100% - 10mm); /* Lebar dikurangi margin */
+            width: calc(100% - 10mm);
             height: 20mm;
             display: flex; 
             align-items: center; 
             padding: 0 3mm; 
             box-sizing: border-box; 
             position: relative; 
-            z-index: 10; /* Pastikan di atas watermark */
+            z-index: 10;
         }
         .header-logo { width: 10mm; height: 10mm; margin-right: 3mm; object-fit: cover; flex-shrink: 0; }
         .school-info-header {
@@ -253,14 +244,12 @@
         .school-info-header span:first-child { font-size: 1.3em; font-weight: 800; white-space: nowrap; }
         .school-info-header span:last-child { font-size: 0.8em; font-weight: 500; white-space: nowrap; }
 
-        /* Judul utama kartu */
         .card-main-title {
             width: calc(100% - 10mm); padding: 1.5mm 3mm; box-sizing: border-box; text-align: center;
             font-size: 0.8em; font-weight: 800; color: #000000; text-transform: uppercase;
             line-height: 1.2; padding-bottom: 1mm; z-index: 10;
         }
 
-        /* Bagian detail siswa */
         .student-details-body {
             width: calc(100% - 10mm); padding: 1.5mm 3mm; box-sizing: border-box; flex-grow: 1;
             display: flex; flex-direction: column; justify-content: flex-start; z-index: 10; color: #000000;
@@ -268,13 +257,11 @@
         .student-details-body p { margin: 0.5mm 0; font-size: 0.65em; line-height: 1.25; display: flex; align-items: baseline; }
         .student-details-body .label { display: inline-block; width: 22mm; font-weight: 700; flex-shrink: 0; }
 
-        /* Area footer tanda tangan */
         .signature-footer-area {
             width: calc(100% - 10mm); padding: 0; box-sizing: border-box; position: relative;
             margin-top: auto; z-index: 10; min-height: 22mm;
         }
          
-        /* Tanggal dan lokasi */
         .date-location {
             position: absolute;
             bottom: 21mm; 
@@ -285,7 +272,6 @@
             z-index: 1; 
         }
 
-        /* Detail tanda tangan */
         .signature-details {
             position: absolute;
             bottom: 5mm; 
@@ -302,7 +288,6 @@
             padding: 0;
         }
          
-        /* Gambar tanda tangan dan cap */
         .signature-stamp-img {
             position: absolute;
             bottom: 8mm; 
@@ -310,10 +295,9 @@
             width: 23mm;
             height: 15mm;
             object-fit: contain; 
-            z-index: 0; /* Di bawah teks */
+            z-index: 0;
         }
          
-        /* Pita di sisi kanan kartu */
         .card-right-ribbon {
             position: absolute; top: 0; right: 0; width: 10mm; height: 100%;
             background: linear-gradient(to bottom, var(--ribbon-bg-color), rgba(108, 122, 137, 0)); 
@@ -326,64 +310,38 @@
             color: var(--header-text-color);
             text-transform: uppercase; 
             text-align: center; 
-            margin-bottom: 14mm; /* Mengatur posisi teks */
+            margin-bottom: 14mm;
         }
 
-        /* Watermark logo sekolah */
         .school-logo-watermark {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('https://raw.githubusercontent.com/smp2pajangan/gambar/refs/heads/main/logosmpn2pjg.png');
-            background-repeat: no-repeat; background-position: left center; background-size: 110mm auto;
-            opacity: 0.05; pointer-events: none; z-index: 0; /* Di bawah semua konten */
-        }
-
-        /* Tombol Unduh dalam tampilan utama */
-        .download-button {
-            padding: 12px 25px; 
-            font-size: 1.1em; 
-            cursor: pointer; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            background-color: var(--button-secondary-bg);
-            transition: background-color 0.3s;
-        }
-        .download-button:hover { 
-            background-color: var(--button-secondary-hover); 
+            background-repeat: no-repeat;
+            background-position: 3.5cm center; /* Geser ke kanan 3.5cm */
+            background-size: 110mm auto;
+            opacity: 0.05; pointer-events: none; z-index: 0;
         }
     </style>
 </head>
 <body>
-    <!-- Kontainer Tampilan Awal -->
-    <div class="initial-view-container" id="initial-view-container">
-        <p class="description-text">Isikan data ujian untuk membuat kartu ujian siswa. Biodata siswa akan diambil dari menu peserta pada panel Admin.</p>
-        <button id="show-modal-btn" class="action-button">ISI DATA UJIAN</button>
-    </div>
-
-    <!-- Kontainer Tampilan Utama Setelah Render -->
     <div class="main-app-view-container" id="main-app-view-container" style="display: none;">
         <div class="action-buttons-after-render">
-            <button id="change-data-btn" class="action-button">GANTI DATA UJIAN</button>
+            <button id="change-data-btn" class="action-button"><i class="fas fa-sync-alt"></i> GANTI DATA KARTU UJIAN</button>
             <button id="download-cards-btn" class="download-button">
-                <i class="fas fa-file-pdf"></i> Unduh Kartu
+                <i class="fas fa-file-pdf"></i> UNDUH KARTU UJIAN
             </button>
         </div>
-        <!-- Konten yang akan diunduh sebagai PDF -->
         <div id="contentToDownload" class="page-a4">
             <div class="card-grid" id="studentCardGrid">
-                <!-- Kartu siswa akan dimuat di sini oleh JavaScript -->
             </div>
         </div>
     </div>
 
-    <!-- Struktur Modal -->
-    <div id="exam-data-modal" class="modal-overlay" style="display: none;">
+    <div id="exam-data-modal" class="modal-overlay" style="display: flex;">
         <div class="modal-content">
             <span class="close-button" id="close-modal-btn">&times;</span>
-            <h2>Isi Data Ujian</h2>
+            <h2>Isilah Data Kartu Ujian</h2>
             
-            <!-- UPDATED: Layout Grid untuk Input di Modal (Sekarang 1 kolom) -->
             <div id="modal-input-grid">
                 <div class="modal-input-group">
                     <label for="modal-class-select">Pilih Tingkat Kelas:</label>
@@ -410,13 +368,12 @@
                     <input type="text" id="modal-principal-name-input" value="Heru Supranoto, S.Pd.">
                 </div>
                 <div class="modal-input-group">
-                    <label for="modal-nip-number-input">NIP:</label> <!-- UPDATED: Label NIP -->
-                    <input type="text" id="modal-nip-number-input" value="196609271993121003"> <!-- UPDATED: Nilai NIP -->
+                    <label for="modal-nip-number-input">NIP:</label>
+                    <input type="text" id="modal-nip-number-input" value="196609271993121003">
                 </div>
-                <button id="modal-save-btn" class="action-button">Simpan</button>
+                <button id="modal-save-btn" class="action-button"><i class="fas fa-save"></i> SIMPAN</button>
             </div>
 
-            <!-- Spinner di dalam modal -->
             <div id="modal-loading-spinner" class="spinner-overlay" style="display: none;">
                 <i class="fas fa-spinner fa-spin fa-3x"></i>
                 <p>Memuat data dan merender kartu...</p>
@@ -424,18 +381,15 @@
         </div>
     </div>
 
-    <!-- Spinner Global untuk Unduh PDF -->
-    <div id="global-download-spinner" class="spinner-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); color: white; z-index: 9999;">
+    <div id="global-download-spinner" class="spinner-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999;">
         <i class="fas fa-spinner fa-spin fa-5x"></i>
         <p class="mt-4">Sedang membuat dan mengunduh PDF...</p>
     </div>
 
     <script type="module">
-        // Import modul Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
         import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
-        // Konfigurasi Firebase untuk setiap grup database
         const allFirebaseConfigs = {
             '7ABC': { apiKey: "AIzaSyBJBl_HWsOsnBBI1EPs1yQlJd0Hso8HcSo", authDomain: "ujianpdf-7abc.firebaseapp.com", databaseURL: "https://ujianpdf-7abc-default-rtdb.firebaseio.com" },
             '7DEF': { apiKey: "AIzaSyDQKdbwaG0Tg7_tfHs0hCbNR3xlqT3vWLA", authDomain: "ujianpdf-7def.firebaseapp.com", databaseURL: "https://ujianpdf-7def-default-rtdb.firebaseio.com" },
@@ -445,41 +399,33 @@
             '9DEF': { apiKey: "AIzaSyDK50Amn6N8gl_q6CVhDjV_DRPpdCpCTrw", authDomain: "ujianpdf-9def.firebaseapp.com", databaseURL: "https://ujianpdf-9def-default-rtdb.firebaseio.com" }
         };
          
-        // Pemetaan kelas ke grup database Firebase
         const gradeToDbGroupMap = {
             '7': ['7ABC', '7DEF'],
             '8': ['8ABC', '8DEF'],
             '9': ['9ABC', '9DEF']
         };
 
-        // Inisialisasi semua aplikasi Firebase
         const firebaseApps = {};
         for (const key in allFirebaseConfigs) {
             firebaseApps[key] = initializeApp(allFirebaseConfigs[key], key);
         }
 
-        // Variabel global untuk data siswa
         let allStudents = [];
-        // Variabel untuk menyimpan data ujian yang terakhir dirender
         let currentExamData = {
             class: '7',
             academicYear: '2025/2026',
             examTitle: 'ASSESMEN SEMESTER AKHIR TAHUN',
             examDate: '12 Desember 2025',
             principalName: 'Heru Supranoto, S.Pd.',
-            nipNumber: '196609271993121003' // UPDATED: Nilai NIP
+            nipNumber: '196609271993121003'
         };
 
-        // Mendapatkan elemen DOM utama
-        const initialViewContainer = document.getElementById('initial-view-container');
         const mainAppViewContainer = document.getElementById('main-app-view-container');
-        const showModalBtn = document.getElementById('show-modal-btn');
         const changeDataBtn = document.getElementById('change-data-btn');
         const downloadCardsBtn = document.getElementById('download-cards-btn');
         const studentCardGrid = document.getElementById('studentCardGrid');
         const contentToDownload = document.getElementById('contentToDownload');
 
-        // Elemen Modal
         const examDataModal = document.getElementById('exam-data-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const modalClassSelect = document.getElementById('modal-class-select');
@@ -490,17 +436,14 @@
         const modalNipNumberInput = document.getElementById('modal-nip-number-input');
         const modalSaveBtn = document.getElementById('modal-save-btn');
         const modalLoadingSpinner = document.getElementById('modal-loading-spinner');
-        const modalInputGrid = document.getElementById('modal-input-grid'); // Konten form modal
+        const modalInputGrid = document.getElementById('modal-input-grid');
 
-        // Spinner Global untuk Unduh
         const globalDownloadSpinner = document.getElementById('global-download-spinner');
 
-        const signatureUrl = 'https://raw.githubusercontent.com/speropa/cetakkartu/refs/heads/main/ttd.png'; // URL tanda tangan
+        const signatureUrl = 'https://raw.githubusercontent.com/speropa/cetakkartu/refs/heads/main/ttd.png';
 
-        // Fungsi untuk menambahkan padding nol pada angka
         const padNumber = (num, length) => String(num).padStart(length, '0');
 
-        // Fungsi untuk membuat elemen kartu siswa dengan parameter dinamis
         const createStudentCard = (student) => {
             const card = document.createElement('div');
             card.classList.add('student-card');
@@ -508,12 +451,11 @@
             const studentName = student.name || 'N/A';
             const studentClass = student.class || 'N/A';
             const studentRoom = student.room || 'N/A';
-            // InnerHTML untuk struktur kartu siswa, menggunakan parameter dinamis dari currentExamData
             card.innerHTML = `
                 <div class="school-logo-watermark"></div>
                 <div class="card-top-header">
                     <img src="https://raw.githubusercontent.com/smp2pajangan/gambar/refs/heads/main/logosmpn2pjg.png" alt="Logo Sekolah" class="header-logo">
-                    <div class="school-info-header"><span>SMPN 2 PAJANGAN</span><span>TAHUN AJARAN ${currentExamData.academicYear}</span></div>
+                    <div class="school-info-header"><span>SMP N 2 PAJANGAN</span><span>TAHUN AJARAN ${currentExamData.academicYear}</span></div>
                 </div>
                 <div class="card-main-title">${currentExamData.examTitle}</div>
                 <div class="student-details-body">
@@ -534,54 +476,45 @@
             return card;
         };
 
-        // Fungsi untuk merender SEMUA kartu siswa dengan jeda
         function renderAllCards() {
-            studentCardGrid.innerHTML = ''; // Kosongkan grid
+            studentCardGrid.innerHTML = '';
             allStudents.forEach((student, index) => {
-                const card = createStudentCard(student); // Kartu dibuat dengan currentExamData
+                const card = createStudentCard(student);
                 studentCardGrid.appendChild(card);
 
-                // Tambahkan div kosong sebagai jeda vertikal setelah setiap 10 kartu (5 baris)
-                // index + 1 karena index dimulai dari 0
                 if ((index + 1) % 10 === 0) {
                     const breakDiv = document.createElement('div');
                     breakDiv.style.height = '1.5cm'; 
-                    breakDiv.style.width = '100%'; // Merentang seluruh lebar grid
-                    breakDiv.style.gridColumn = '1 / -1'; // Memastikan div ini merentang semua kolom
+                    breakDiv.style.width = '100%';
+                    breakDiv.style.gridColumn = '1 / -1';
                     studentCardGrid.appendChild(breakDiv);
                 }
             });
         }
 
-        // Fungsi asinkron untuk memuat semua data siswa berdasarkan kelas yang dipilih
         async function loadDataAndRender() {
-            allStudents = []; // Reset data siswa
+            allStudents = [];
          
-            // Ambil kelas dari modal
             const selectedGrade = modalClassSelect.value;
             const dbGroups = gradeToDbGroupMap[selectedGrade];
 
-            // Buat promise untuk setiap panggilan Firebase
             const fetchPromises = dbGroups.map(groupKey => { 
                 const app = firebaseApps[groupKey]; 
                 const db = getDatabase(app);
-                return get(ref(db, 'students/')); // Ambil data dari path 'students/'
+                return get(ref(db, 'students/'));
             });
 
             try {
-                const snapshots = await Promise.all(fetchPromises); // Tunggu semua promise selesai
+                const snapshots = await Promise.all(fetchPromises);
                 let combinedStudents = [];
                 snapshots.forEach(snapshot => {
                     if (snapshot.exists()) {
-                        // Gabungkan data dari semua snapshot
                         combinedStudents = combinedStudents.concat(Object.values(snapshot.val()));
                     }
                 });
                  
-                // Urutkan siswa berdasarkan ID
                 allStudents = combinedStudents.sort((a, b) => (a.id || "").localeCompare(b.id || ""));
                 
-                // Simpan data ujian yang baru di-render
                 currentExamData = {
                     class: modalClassSelect.value,
                     academicYear: modalAcademicYearInput.value,
@@ -591,10 +524,9 @@
                     nipNumber: modalNipNumberInput.value
                 };
 
-                renderAllCards(); // Render semua kartu setelah data dimuat
+                renderAllCards();
             } catch (error) {
                 console.error("Gagal memuat data dari Firebase:", error);
-                // Tampilkan pesan error kepada pengguna
                 const errorDiv = document.createElement('div');
                 errorDiv.textContent = 'Tidak dapat memuat data. Silakan coba lagi.';
                 errorDiv.style.color = 'red';
@@ -602,16 +534,13 @@
                 errorDiv.style.backgroundColor = '#ffdddd';
                 errorDiv.style.border = '1px solid red';
                 errorDiv.style.borderRadius = '5px';
-                // Tambahkan pesan error di dalam modal atau di tempat yang terlihat
                 modalLoadingSpinner.parentNode.insertBefore(errorDiv, modalLoadingSpinner.nextSibling);
                 setTimeout(() => errorDiv.remove(), 5000); 
             } 
         }
 
-        // --- Fungsi Kontrol UI ---
         function showModal(prefill = false) {
             if (prefill) {
-                // Isi modal dengan data terakhir yang dirender
                 modalClassSelect.value = currentExamData.class;
                 modalAcademicYearInput.value = currentExamData.academicYear;
                 modalExamTitleInput.value = currentExamData.examTitle;
@@ -619,22 +548,21 @@
                 modalPrincipalNameInput.value = currentExamData.principalName;
                 modalNipNumberInput.value = currentExamData.nipNumber;
             } else {
-                // Set nilai default atau kosongkan (opsional, tergantung UX)
-                modalClassSelect.value = '7'; // Kembali ke default jika tidak prefill
+                modalClassSelect.value = '7';
                 modalAcademicYearInput.value = '2025/2026';
                 modalExamTitleInput.value = 'ASSESMEN SEMESTER AKHIR TAHUN';
                 modalExamDateInput.value = '12 Desember 2025';
                 modalPrincipalNameInput.value = 'Heru Supranoto, S.Pd.';
-                modalNipNumberInput.value = '196609271993121003'; // UPDATED: Nilai NIP default
+                modalNipNumberInput.value = '196609271993121003';
             }
-            examDataModal.style.display = 'flex'; // Tampilkan modal
-            hideLoadingSpinner(modalLoadingSpinner); // Pastikan spinner modal tersembunyi
-            modalInputGrid.style.display = 'grid'; // Pastikan form modal terlihat
-            modalSaveBtn.style.display = 'block'; // Pastikan tombol simpan terlihat
+            examDataModal.style.display = 'flex';
+            hideLoadingSpinner(modalLoadingSpinner);
+            modalInputGrid.style.display = 'grid';
+            modalSaveBtn.style.display = 'block';
         }
 
         function hideModal() {
-            examDataModal.style.display = 'none'; // Sembunyikan modal
+            examDataModal.style.display = 'none';
         }
 
         function showLoadingSpinner(spinnerElement) {
@@ -645,91 +573,84 @@
             spinnerElement.style.display = 'none';
         }
 
-        // --- Event Listeners ---
-
-        // Event listener untuk tombol "ISI DATA UJIAN" (tampilan awal)
-        showModalBtn.addEventListener('click', () => showModal(false));
-
-        // Event listener untuk tombol "GANTI DATA UJIAN" (setelah render)
         changeDataBtn.addEventListener('click', () => showModal(true));
 
-        // Event listener untuk tombol "Tutup" di modal
         closeModalBtn.addEventListener('click', hideModal);
 
-        // Event listener untuk tombol "Simpan" di modal
         modalSaveBtn.addEventListener('click', async () => {
-            showLoadingSpinner(modalLoadingSpinner); // Tampilkan spinner di modal
-            modalInputGrid.style.display = 'none'; // Sembunyikan form modal
-            modalSaveBtn.style.display = 'none'; // Sembunyikan tombol simpan
+            showLoadingSpinner(modalLoadingSpinner);
+            modalInputGrid.style.display = 'none';
+            modalSaveBtn.style.display = 'none';
 
-            await loadDataAndRender(); // Muat data dan render kartu
+            await loadDataAndRender();
 
-            hideLoadingSpinner(modalLoadingSpinner); // Sembunyikan spinner di modal
-            hideModal(); // Tutup modal
+            hideLoadingSpinner(modalLoadingSpinner);
+            hideModal();
 
-            // Sembunyikan tampilan awal dan tampilkan tampilan utama aplikasi
-            initialViewContainer.style.display = 'none';
-            mainAppViewContainer.style.display = 'flex'; // Tampilkan container utama
+            mainAppViewContainer.style.display = 'flex';
         });
 
-        // Event listener untuk tombol "Unduh Kartu"
         downloadCardsBtn.addEventListener('click', async () => {
-            showLoadingSpinner(globalDownloadSpinner); // Tampilkan spinner unduh global
-            await downloadPdf(); // Panggil fungsi unduh
-            hideLoadingSpinner(globalDownloadSpinner); // Sembunyikan spinner setelah selesai
+            downloadCardsBtn.disabled = true;
+            downloadCardsBtn.style.opacity = '0.7';
+            downloadCardsBtn.style.cursor = 'not-allowed';
+
+            showLoadingSpinner(globalDownloadSpinner);
+            
+            try {
+                await downloadPdf();
+            } catch (error) {
+                console.error("Download failed:", error);
+            } finally {
+                hideLoadingSpinner(globalDownloadSpinner);
+                downloadCardsBtn.disabled = false;
+                downloadCardsBtn.style.opacity = '1';
+                downloadCardsBtn.style.cursor = 'pointer';
+            }
         });
 
-        // Pastikan tampilan awal yang benar saat DOMContentLoaded
         document.addEventListener('DOMContentLoaded', () => {
-            initialViewContainer.style.display = 'block'; // Tampilkan tampilan awal
-            mainAppViewContainer.style.display = 'none'; // Sembunyikan tampilan utama
+            mainAppViewContainer.style.display = 'none';
+            examDataModal.style.display = 'flex';
         });
     </script>
     <script>
-        // Fungsi untuk mengunduh konten sebagai PDF
         async function downloadPdf() {
             const element = document.getElementById('contentToDownload');
-            // Buat nama file PDF dari nilai input
-            const classValue = document.getElementById('modal-class-select').value; // Mengambil dari input modal
-            const examTitle = document.getElementById('modal-exam-title-input').value; // Mengambil dari input modal
-            const filenameBase = `kartu_peserta_kelas_${classValue}_${examTitle.replace(/\s/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`; // Sanitasi nama file
+            const classValue = document.getElementById('modal-class-select').value;
+            const examTitle = document.getElementById('modal-exam-title-input').value;
+            const filenameBase = `kartu_peserta_kelas_${classValue}_${examTitle.replace(/\s/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`;
             const filename = `${filenameBase}_${new Date().toLocaleDateString('id-ID').replace(/\//g, '-')}.pdf`;
 
-            // Membuat kloningan dari elemen yang akan dicetak untuk menghindari masalah CSS/rendering
             const elementToPrint = element.cloneNode(true);
             const printContainer = document.createElement('div');
              
-            // Menyembunyikan wadah kloningan di luar viewport
             printContainer.style.position = 'absolute';
             printContainer.style.left = '-9999px';
             printContainer.style.top = '0';
-            printContainer.style.width = '21cm'; // Beri dimensi agar scrollHeight akurat
+            printContainer.style.width = '21cm';
              
             printContainer.appendChild(elementToPrint);
             document.body.appendChild(printContainer);
              
-            // Opsi konfigurasi untuk html2pdf
             const options = {
                 margin: 0,
-                filename: filename, // Gunakan nama file yang dibuat
+                filename: filename,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
-                    scale: 3, // UPDATED: Skala rendering untuk kualitas lebih baik
-                    dpi: 300, // DPI untuk output
+                    scale: 2,
+                    logging: false,
                     letterRendering: true, 
-                    useCORS: true, // Izinkan penggunaan gambar lintas domain
-                    // Memaksa tinggi canvas sesuai dengan tinggi elemen yang akan dicetak
+                    useCORS: true,
                     windowHeight: elementToPrint.scrollHeight 
                 },
-                jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' } // Ukuran dan orientasi PDF
+                jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Membuat PDF dari kloningan yang terisolasi
             try {
                 await html2pdf().from(elementToPrint).set(options).save();
             } catch (err) {
                 console.error("Gagal membuat PDF:", err);
-                // Tampilkan pesan error kepada pengguna jika terjadi kesalahan unduh
                 const errorDiv = document.createElement('div');
                 errorDiv.textContent = 'Gagal mengunduh PDF. Silakan coba lagi.';
                 errorDiv.style.color = 'red';
@@ -739,12 +660,11 @@
                 errorDiv.style.borderRadius = '5px';
                 document.body.insertBefore(errorDiv, document.body.firstChild);
                 setTimeout(() => errorDiv.remove(), 5000); 
+                throw err;
             } finally {
-                // Menghapus kloningan setelah selesai, baik berhasil maupun error
                 document.body.removeChild(printContainer);
             }
         };
-        // Mengikat fungsi downloadPdf ke window agar bisa diakses dari inline onclick
         window.downloadPdf = downloadPdf;
     </script>
 </body>
