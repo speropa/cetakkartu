@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cetak Kartu Peserta Ujian</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Memuat pustaka html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Variabel CSS untuk warna dan estetika */
+        :root {
+            --header-bg-color: #e67e22; /* Warna latar belakang header (oranye) */
+            --header-text-color: #ffffff; /* Warna teks header (putih) */
+            --main-text-color: #000000; /* Warna teks utama (hitam) */
+            --dark-blue: #2c3e50; /* Warna biru gelap */
+            --border-color: #000000; /* Warna border (hitam) */
+            --light-text: #666; /* Warna teks terang abu-abu */
+            --ribbon-bg-color: #6c7a89; /* Warna latar belakang pita (abu-abu kebiruan) */
+            --button-primary-bg: #3498db; /* Warna latar belakang tombol utama (biru) */
+            --button-primary-hover: #2980b9; /* Warna hover tombol utama (biru lebih gelap) */
+            --button-secondary-bg: #e74c3c; /* Warna latar belakang tombol sekunder (merah) */
+            --button-secondary-hover: #c0392b; /* Warna hover tombol sekunder (merah lebih gelap) */
+            --button-disabled-bg: #bdc3c7; /* Warna latar belakang tombol nonaktif (abu-abu) */
+        }
+
+        /* Styling dasar untuk body */
+        body {
+            font-family: 'Inter', sans-serif; /* Font utama */
+            margin: 0;
+            padding: 20px;
+            background-color: #e0e0e0; /* Warna latar belakang abu-abu terang */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh; /* Tinggi minimal body */
+            color: var(--main-text-color);
+            overflow: auto; /* Scroll jika konten melebihi tinggi viewport */
+        }
+
+        /* Container untuk kontrol seperti pemilihan kelas dan tombol */
+        .controls-container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Efek bayangan */
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap; /* Wrap item jika tidak cukup ruang */
+            justify-content: center;
+            align-items: center;
+            gap: 15px; /* Jarak antar item */
+        }
+        .controls-container label { font-weight: 600; color: var(--dark-blue); }
+        .controls-container select, .controls-container button {
+            padding: 10px 15px; border-radius: 6px; border: 1px solid #bdc3c7; font-size: 1em; cursor: pointer;
+        }
+        .controls-container button {
+            background-color: var(--button-primary-bg); color: white; border: none; transition: background-color 0.3s;
+        }
+        .controls-container button:hover { background-color: var(--button-primary-hover); }
+         
+        /* Indikator loading */
+        #loading-indicator { display: none; margin-top: 10px; font-weight: 500; color: var(--dark-blue); }
+
+        /* Styling untuk halaman A4 (untuk pratinjau PDF) */
+        .page-a4 {
+            width: 21cm; /* Lebar standar A4 */
+            padding: 0.5cm; /* Padding di sekitar konten */
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.15); /* Bayangan halaman */
+            box-sizing: border-box; /* Padding dan border termasuk dalam dimensi */
+            display: flex;
+            flex-direction: column; /* Mengatur item agar menumpuk secara vertikal */
+            justify-content: flex-start;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        /* Grid untuk kartu siswa */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 10cm); /* 2 kolom, masing-masing 10cm */
+            gap: 0; /* Tidak ada jarak antar kartu */
+            width: 20cm; /* Total lebar grid */
+            box-sizing: border-box;
+            /* border: none; (Dihapus agar border kartu individu mendefinisikan tampilan grid) */
+        }
+
+        /* Styling untuk setiap kartu siswa */
+        .student-card { 
+            background: #ffffff; 
+            /* UPDATED: Terapkan border penuh pada setiap kartu */
+            border: 2px solid var(--border-color); /* Semua sisi memiliki border */
+            box-sizing: border-box; 
+            width: 10cm; 
+            height: 5.64cm; 
+            overflow: hidden; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+        } 
+        /* REMOVED: Aturan border nth-child spesifik tidak lagi diperlukan */
+        /* .student-card:nth-child(odd) { border-left: 2px solid var(--border-color); } 
+        .student-card:nth-child(1), .student-card:nth-child(2) { 
+            border-top: 2px solid var(--border-color); 
+        } */
+         
+        /* Header atas kartu */
+        .card-top-header {
+            background-color: var(--header-bg-color); 
+            width: calc(100% - 10mm); /* Lebar dikurangi margin */
+            height: 20mm;
+            display: flex; 
+            align-items: center; 
+            padding: 0 3mm; 
+            box-sizing: border-box; 
+            position: relative; 
+            z-index: 10; /* Pastikan di atas watermark */
+        }
+        .header-logo { width: 10mm; height: 10mm; margin-right: 3mm; object-fit: cover; flex-shrink: 0; }
+        .school-info-header {
+            flex-grow: 1; color: var(--header-text-color); line-height: 1.2; font-weight: 600;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .school-info-header span:first-child { font-size: 1.3em; font-weight: 800; white-space: nowrap; }
+        .school-info-header span:last-child { font-size: 0.8em; font-weight: 500; white-space: nowrap; }
+
+        /* Judul utama kartu */
+        .card-main-title {
+            width: calc(100% - 10mm); padding: 1.5mm 3mm; box-sizing: border-box; text-align: center;
+            font-size: 0.8em; font-weight: 800; color: #000000; text-transform: uppercase;
+            line-height: 1.2; padding-bottom: 1mm; z-index: 10;
+        }
+
+        /* Bagian detail siswa */
+        .student-details-body {
+            width: calc(100% - 10mm); padding: 1.5mm 3mm; box-sizing: border-box; flex-grow: 1;
+            display: flex; flex-direction: column; justify-content: flex-start; z-index: 10; color: #000000;
+        }
+        .student-details-body p { margin: 0.5mm 0; font-size: 0.65em; line-height: 1.25; display: flex; align-items: baseline; }
+        .student-details-body .label { display: inline-block; width: 22mm; font-weight: 700; flex-shrink: 0; }
+
+        /* Area footer tanda tangan */
+        .signature-footer-area {
+            width: calc(100% - 10mm); padding: 0; box-sizing: border-box; position: relative;
+            margin-top: auto; z-index: 10; min-height: 22mm;
+        }
+         
+        /* Tanggal dan lokasi */
+        .date-location {
+            position: absolute;
+            bottom: 21mm; 
+            left: 48mm; 
+            font-size: 0.7em;
+            font-weight: bold; 
+            color: var(--main-text-color);
+            z-index: 1; 
+        }
+
+        /* Detail tanda tangan */
+        .signature-details {
+            position: absolute;
+            bottom: 5mm; 
+            left: 48mm;   
+            z-index: 1;
+            line-height: 1.2;
+        }
+
+        .signature-name, .signature-nip {
+            font-size: 0.7em;
+            font-weight: bold; 
+            color: var(--main-text-color);
+            margin: 0;
+            padding: 0;
+        }
+         
+        /* Gambar tanda tangan dan cap */
+        .signature-stamp-img {
+            position: absolute;
+            bottom: 8mm; 
+            right: 26mm; 
+            width: 23mm;
+            height: 15mm;
+            object-fit: contain; 
+            z-index: 0; /* Di bawah teks */
+        }
+         
+        /* Pita di sisi kanan kartu */
+        .card-right-ribbon {
+            position: absolute; top: 0; right: 0; width: 10mm; height: 100%;
+            background: linear-gradient(to bottom, var(--ribbon-bg-color), rgba(108, 122, 137, 0)); 
+            display: flex; justify-content: center; align-items: center; box-sizing: border-box; z-index: 12; 
+        }
+        .ribbon-peserta-text {
+            font-size: 6mm; 
+            line-height: 0.9;
+            font-weight: 900; 
+            color: var(--header-text-color);
+            text-transform: uppercase; 
+            text-align: center; 
+            margin-bottom: 14mm; /* Mengatur posisi teks */
+        }
+
+        /* Watermark logo sekolah */
+        .school-logo-watermark {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://raw.githubusercontent.com/smp2pajangan/gambar/refs/heads/main/logosmpn2pjg.png');
+            background-repeat: no-repeat; background-position: left center; background-size: 110mm auto;
+            opacity: 0.05; pointer-events: none; z-index: 0; /* Di bawah semua konten */
+        }
+
+        /* Container tombol unduh */
+        .download-button-container {
+            text-align: center;
+        }
+        .download-button {
+            padding: 12px 25px; 
+            font-size: 1.1em; 
+            cursor: pointer; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background-color: var(--button-secondary-bg);
+        }
+        .download-button:hover { background-color: var(--button-secondary-hover); }
+
+    </style>
+</head>
+<body>
+    <!-- Kontrol untuk memilih kelas dan memuat data -->
+    <div class="controls-container">
+        <label for="class-select">Pilih Tingkat Kelas:</label>
+        <select id="class-select">
+            <option value="7">Kelas 7</option>
+            <option value="8">Kelas 8</option>
+            <option value="9">Kelas 9</option>
+        </select>
+        <div id="loading-indicator">Memuat data...</div>
+
+        <!-- Tombol untuk mengunduh PDF -->
+        <div class="download-button-container">
+            <button onclick="downloadPdf()" class="download-button">
+                <i class="fas fa-file-pdf"></i> Unduh Halaman Ini
+            </button>
+        </div>
+    </div>
+
+    <!-- Konten yang akan diunduh sebagai PDF -->
+    <div id="contentToDownload" class="page-a4">
+        <div class="card-grid" id="studentCardGrid">
+            <!-- Kartu siswa akan dimuat di sini oleh JavaScript -->
+        </div>
+    </div>
+
+    <script type="module">
+        // Import modul Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+        // Konfigurasi Firebase untuk setiap grup database
+        const allFirebaseConfigs = {
+            '7ABC': { apiKey: "AIzaSyBJBl_HWsOsnBBI1EPs1yQlJd0Hso8HcSo", authDomain: "ujianpdf-7abc.firebaseapp.com", databaseURL: "https://ujianpdf-7abc-default-rtdb.firebaseio.com" },
+            '7DEF': { apiKey: "AIzaSyDQKdbwaG0Tg7_tfHs0hCbNR3xlqT3vWLA", authDomain: "ujianpdf-7def.firebaseapp.com", databaseURL: "https://ujianpdf-7def-default-rtdb.firebaseio.com" },
+            '8ABC': { apiKey: "AIzaSyAsbVn2qVIgH278ZjPfkMihlGYmyL8zJFA", authDomain: "ujianpdf8abc-3bedf.firebaseapp.com", databaseURL: "https://ujianpdf8abc-3bedf-default-rtdb.firebaseio.com" },
+            '8DEF': { apiKey: "AIzaSyBvkIMTkJkDqe2nKspIMXOCeT9vc6h8xjA", authDomain: "ujianpdf8def-9bdcd.firebaseapp.com", databaseURL: "https://ujianpdf8def-9bdcd-default-rtdb.firebaseio.com" },
+            '9ABC': { apiKey: "AIzaSyCjf42a3CCB3IuNto2K8MGpTX_SM1FXyrw", authDomain: "ujianpdf-9abc.firebaseapp.com", databaseURL: "https://ujianpdf-9abc-default-rtdb.firebaseio.com" },
+            '9DEF': { apiKey: "AIzaSyDK50Amn6N8gl_q6CVhDjV_DRPpdCpCTrw", authDomain: "ujianpdf-9def.firebaseapp.com", databaseURL: "https://ujianpdf-9def-default-rtdb.firebaseio.com" }
+        };
+         
+        // Pemetaan kelas ke grup database Firebase
+        const gradeToDbGroupMap = {
+            '7': ['7ABC', '7DEF'],
+            '8': ['8ABC', '8DEF'],
+            '9': ['9ABC', '9DEF']
+        };
+
+        // Inisialisasi semua aplikasi Firebase
+        const firebaseApps = {};
+        for (const key in allFirebaseConfigs) {
+            firebaseApps[key] = initializeApp(allFirebaseConfigs[key], key);
+        }
+
+        // Variabel global untuk data siswa
+        let allStudents = [];
+
+        // Mendapatkan elemen DOM
+        const studentCardGrid = document.getElementById('studentCardGrid');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const classSelect = document.getElementById('class-select');
+        const signatureUrl = 'https://raw.githubusercontent.com/speropa/cetakkartu/refs/heads/main/ttd.png'; // URL tanda tangan
+
+        // Fungsi untuk menambahkan padding nol pada angka
+        const padNumber = (num, length) => String(num).padStart(length, '0');
+
+        // Fungsi untuk membuat elemen kartu siswa
+        const createStudentCard = (student) => {
+            const card = document.createElement('div');
+            card.classList.add('student-card');
+            const studentId = student.id || 'N/A';
+            const studentName = student.name || 'N/A';
+            const studentClass = student.class || 'N/A';
+            const studentRoom = student.room || 'N/A';
+            // InnerHTML untuk struktur kartu siswa
+            card.innerHTML = `
+                <div class="school-logo-watermark"></div>
+                <div class="card-top-header">
+                    <img src="https://raw.githubusercontent.com/smp2pajangan/gambar/refs/heads/main/logosmpn2pjg.png" alt="Logo Sekolah" class="header-logo">
+                    <div class="school-info-header"><span>SMPN 2 PAJANGAN</span><span>TAHUN AJARAN 2025/2026</span></div>
+                </div>
+                <div class="card-main-title">ASSESMEN SEMESTER AKHIR TAHUN</div>
+                <div class="student-details-body">
+                    <p><span class="label">ID-Siswa</span>:&nbsp;${padNumber(studentId, 3)}</p>
+                    <p><span class="label">Nama</span>:&nbsp;${studentName}</p>
+                    <p><span class="label">Kelas</span>:&nbsp;${studentClass}</p>
+                    <p><span class="label">Ruang</span>:&nbsp;${padNumber(studentRoom, 2)}</p>
+                </div>
+                <div class="signature-footer-area">
+                    <img src="${signatureUrl}" alt="Tanda Tangan & Cap" class="signature-stamp-img" onerror="this.style.display='none'">
+                    <div class="date-location">Pajangan, 12 Desember 2025</div>
+                    <div class="signature-details">
+                        <p class="signature-name">Heru Supranoto, S.Pd.</p>
+                        <p class="signature-nip">NIP. 19660927 199903 1 0003</p> <!-- FIX: Menambahkan titik setelah NIP -->
+                    </div>
+                </div>
+                <div class="card-right-ribbon"><div class="ribbon-peserta-text">P<br>E<br>S<br>E<br>R<br>T<br>A</div></div>`;
+            return card;
+        };
+
+        // Fungsi untuk merender SEMUA kartu siswa dengan jeda
+        function renderAllCards() {
+            studentCardGrid.innerHTML = ''; // Kosongkan grid
+            allStudents.forEach((student, index) => {
+                const card = createStudentCard(student);
+                studentCardGrid.appendChild(card);
+
+                // Tambahkan div kosong sebagai jeda vertikal setelah setiap 10 kartu (5 baris)
+                // index + 1 karena index dimulai dari 0
+                if ((index + 1) % 10 === 0) {
+                    const breakDiv = document.createElement('div');
+                    breakDiv.style.height = '1.5cm'; 
+                    breakDiv.style.width = '100%'; // Merentang seluruh lebar grid
+                    breakDiv.style.gridColumn = '1 / -1'; // Memastikan div ini merentang semua kolom
+                    studentCardGrid.appendChild(breakDiv);
+                }
+            });
+        }
+
+        // Fungsi asinkron untuk memuat semua data siswa berdasarkan kelas yang dipilih
+        async function loadAllDataForGrade() {
+            loadingIndicator.style.display = 'block'; // Tampilkan indikator loading
+            allStudents = []; // Reset data siswa
+         
+            const selectedGrade = classSelect.value;
+            const dbGroups = gradeToDbGroupMap[selectedGrade];
+
+            // Buat promise untuk setiap panggilan Firebase
+            const fetchPromises = dbGroups.map(groupKey => { 
+                const app = firebaseApps[groupKey]; 
+                const db = getDatabase(app);
+                return get(ref(db, 'students/')); // Ambil data dari path 'students/'
+            });
+
+            try {
+                const snapshots = await Promise.all(fetchPromises); // Tunggu semua promise selesai
+                let combinedStudents = [];
+                snapshots.forEach(snapshot => {
+                    if (snapshot.exists()) {
+                        // Gabungkan data dari semua snapshot
+                        combinedStudents = combinedStudents.concat(Object.values(snapshot.val()));
+                    }
+                });
+                 
+                // Urutkan siswa berdasarkan ID
+                allStudents = combinedStudents.sort((a, b) => (a.id || "").localeCompare(b.id || ""));
+                 
+            } catch (error) {
+                console.error("Gagal memuat data dari Firebase:", error);
+                // Tampilkan pesan error kepada pengguna
+                const errorDiv = document.createElement('div');
+                errorDiv.textContent = 'Tidak dapat memuat data. Silakan coba lagi.';
+                errorDiv.style.color = 'red';
+                errorDiv.style.padding = '10px';
+                errorDiv.style.backgroundColor = '#ffdddd';
+                errorDiv.style.border = '1px solid red';
+                errorDiv.style.borderRadius = '5px';
+                document.body.insertBefore(errorDiv, document.body.firstChild);
+                setTimeout(() => errorDiv.remove(), 5000); // Hapus pesan error setelah 5 detik
+            } finally {
+                loadingIndicator.style.display = 'none'; // Sembunyikan indikator loading
+                renderAllCards(); // Render semua kartu setelah data dimuat
+            }
+        }
+
+        // Event listener untuk perubahan pilihan kelas
+        classSelect.addEventListener('change', loadAllDataForGrade);
+
+        // Muat data saat dokumen selesai dimuat
+        document.addEventListener('DOMContentLoaded', loadAllDataForGrade);
+
+    </script>
+    <script>
+        // Fungsi untuk mengunduh konten sebagai PDF
+        function downloadPdf() {
+            const element = document.getElementById('contentToDownload');
+            // pageInfoText tidak lagi digunakan karena tidak ada paginasi di UI, namun tetap digunakan untuk nama file
+            const pageInfoText = `Kelas_${document.getElementById('class-select').value}_${new Date().toLocaleDateString('id-ID').replace(/\//g, '-')}`;
+
+            // Membuat kloningan dari elemen yang akan dicetak untuk menghindari masalah CSS/rendering
+            const elementToPrint = element.cloneNode(true);
+            const printContainer = document.createElement('div');
+             
+            // Menyembunyikan wadah kloningan di luar viewport
+            printContainer.style.position = 'absolute';
+            printContainer.style.left = '-9999px';
+            printContainer.style.top = '0';
+            printContainer.style.width = '21cm'; // Beri dimensi agar scrollHeight akurat
+             
+            printContainer.appendChild(elementToPrint);
+            document.body.appendChild(printContainer);
+             
+            // Opsi konfigurasi untuk html2pdf
+            const options = {
+                margin: 0,
+                filename: `kartu_peserta_${pageInfoText}.pdf`, // Nama file PDF
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2, // Skala rendering untuk kualitas lebih baik
+                    dpi: 300, // DPI untuk output
+                    letterRendering: true, 
+                    useCORS: true, // Izinkan penggunaan gambar lintas domain
+                    // Memaksa tinggi canvas sesuai dengan tinggi elemen yang akan dicetak
+                    windowHeight: elementToPrint.scrollHeight 
+                },
+                jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' } // Ukuran dan orientasi PDF
+            };
+
+            // Membuat PDF dari kloningan yang terisolasi
+            html2pdf().from(elementToPrint).set(options).save().then(() => {
+                // Menghapus kloningan setelah selesai
+                document.body.removeChild(printContainer);
+            }).catch((err) => {
+                console.error("Gagal membuat PDF:", err);
+                // Pastikan kloningan dihapus meskipun terjadi error
+                document.body.removeChild(printContainer);
+            });
+        };
+        // Mengikat fungsi downloadPdf ke window agar bisa diakses dari inline onclick
+        window.downloadPdf = downloadPdf;
+    </script>
+</body>
+</html>
