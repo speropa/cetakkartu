@@ -389,14 +389,21 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
         import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+
+        // --- PENTING: GANTI DENGAN KREDENSIAL ANDA ---
+        // Pastikan email dan password ini valid untuk SEMUA proyek Firebase Anda.
+        const FIREBASE_EMAIL = "speropa@gmail.com";
+        const FIREBASE_PASSWORD = "Pajangan201184*";
+        // ---------------------------------------------
 
         const allFirebaseConfigs = {
-            '7ABC': { apiKey: "AIzaSyBJBl_HWsOsnBBI1EPs1yQlJd0Hso8HcSo", authDomain: "ujianpdf-7abc.firebaseapp.com", databaseURL: "https://ujianpdf-7abc-default-rtdb.firebaseio.com" },
-            '7DEF': { apiKey: "AIzaSyDQKdbwaG0Tg7_tfHs0hCbNR3xlqT3vWLA", authDomain: "ujianpdf-7def.firebaseapp.com", databaseURL: "https://ujianpdf-7def-default-rtdb.firebaseio.com" },
-            '8ABC': { apiKey: "AIzaSyAsbVn2qVIgH278ZjPfkMihlGYmyL8zJFA", authDomain: "ujianpdf8abc-3bedf.firebaseapp.com", databaseURL: "https://ujianpdf8abc-3bedf-default-rtdb.firebaseio.com" },
-            '8DEF': { apiKey: "AIzaSyBvkIMTkJkDqe2nKspIMXOCeT9vc6h8xjA", authDomain: "ujianpdf8def-9bdcd.firebaseapp.com", databaseURL: "https://ujianpdf8def-9bdcd-default-rtdb.firebaseio.com" },
-            '9ABC': { apiKey: "AIzaSyCjf42a3CCB3IuNto2K8MGpTX_SM1FXyrw", authDomain: "ujianpdf-9abc.firebaseapp.com", databaseURL: "https://ujianpdf-9abc-default-rtdb.firebaseio.com" },
-            '9DEF': { apiKey: "AIzaSyDK50Amn6N8gl_q6CVhDjV_DRPpdCpCTrw", authDomain: "ujianpdf-9def.firebaseapp.com", databaseURL: "https://ujianpdf-9def-default-rtdb.firebaseio.com" }
+            '7ABC': { apiKey: "AIzaSyBAKwT7JY_HGnvK6h3u30-dfgRPXfef8l8", authDomain: "abc-a13ea.firebaseapp.com", projectId: "abc-a13ea", databaseURL: "https://abc-a13ea-default-rtdb.firebaseio.com", storageBucket: "abc-a13ea.firebasestorage.app", messagingSenderId: "1052966795599", appId: "1:1052966795599:web:d4d331199ca9081321ed3a" },
+            '7DEF': { apiKey: "AIzaSyBkhBZw3oADXUAJ9FXY9-g7XBsSmQhzZVk", authDomain: "def-ab5ee.firebaseapp.com", projectId: "def-ab5ee", databaseURL: "https://def-ab5ee-default-rtdb.firebaseio.com", storageBucket: "def-ab5ee.firebasestorage.app", messagingSenderId: "129712840107", appId: "1:129712840107:web:ab10576fed95f735dd46ee" },
+            '8ABC': { apiKey: "AIzaSyAwilwwwEJ2MAdSf09BotxNH-z6RiXaHXY", authDomain: "abc-43e73.firebaseapp.com", projectId: "abc-43e73", databaseURL: "https://abc-43e73-default-rtdb.firebaseio.com", storageBucket: "abc-43e73.firebasestorage.app", messagingSenderId: "1043754727577", appId: "1:1043754727577:web:56c3732bf2a6ac900c2008" },
+            '8DEF': { apiKey: "AIzaSyBeCI57lmZ4-8DAKYJ7nvYjnXOfvy0vqrk", authDomain: "def-efcb2.firebaseapp.com", projectId: "def-efcb2", databaseURL: "https://def-efcb2-default-rtdb.firebaseio.com", storageBucket: "def-efcb2.firebasestorage.app", messagingSenderId: "12569956361", appId: "1:12569956361:web:fea36c4e034e65f33ba8d8" },
+            '9ABC': { apiKey: "AIzaSyBZ6JR3ggnUiZFQ-wdrewbfhzMUwFaGGzQ", authDomain: "abc-d272a.firebaseapp.com", projectId: "abc-d272a", databaseURL: "https://abc-d272a-default-rtdb.firebaseio.com", storageBucket: "abc-d272a.firebasestorage.app", messagingSenderId: "1036605132828", appId: "1:1036605132828:web:2b59f91290d50afe304fd9" },
+            '9DEF': { apiKey: "AIzaSyC2iwuDMWTaJIG8g464Wt0En3CXI2DZiz4", authDomain: "def-85f32.firebaseapp.com", projectId: "def-85f32", databaseURL: "https://def-85f32-default-rtdb.firebaseio.com", storageBucket: "def-85f32.firebasestorage.app", messagingSenderId: "82670626048", appId: "1:82670626048:web:f5fdfda8fe078245b6bfe5" }
         };
          
         const gradeToDbGroupMap = {
@@ -408,6 +415,11 @@
         const firebaseApps = {};
         for (const key in allFirebaseConfigs) {
             firebaseApps[key] = initializeApp(allFirebaseConfigs[key], key);
+        }
+
+        const firebaseAuths = {};
+        for (const key in firebaseApps) {
+            firebaseAuths[key] = getAuth(firebaseApps[key]);
         }
 
         let allStudents = [];
@@ -482,7 +494,7 @@
                 const card = createStudentCard(student);
                 studentCardGrid.appendChild(card);
 
-                if ((index + 1) % 10 === 0) {
+                if ((index + 1) % 10 === 0 && index < allStudents.length - 1) {
                     const breakDiv = document.createElement('div');
                     breakDiv.style.height = '1.5cm'; 
                     breakDiv.style.width = '100%';
@@ -498,9 +510,24 @@
             const selectedGrade = modalClassSelect.value;
             const dbGroups = gradeToDbGroupMap[selectedGrade];
 
-            const fetchPromises = dbGroups.map(groupKey => { 
-                const app = firebaseApps[groupKey]; 
+            const fetchPromises = dbGroups.map(async (groupKey) => {
+                const app = firebaseApps[groupKey];
+                const auth = firebaseAuths[groupKey];
                 const db = getDatabase(app);
+
+                try {
+                    // Hanya login jika belum ada user yang aktif
+                    if (!auth.currentUser) {
+                        await signInWithEmailAndPassword(auth, FIREBASE_EMAIL, FIREBASE_PASSWORD);
+                        console.log(`Login ke ${groupKey} berhasil.`);
+                    }
+                } catch (error) {
+                    console.error(`Gagal login ke Firebase ${groupKey}:`, error.message);
+                    alert(`Gagal login ke database ${groupKey}. Periksa kredensial di kode dan aturan keamanan Firebase Anda.`);
+                    return null;
+                }
+                
+                // Setelah login (atau jika sudah login), ambil data
                 return get(ref(db, 'students/'));
             });
 
@@ -508,12 +535,12 @@
                 const snapshots = await Promise.all(fetchPromises);
                 let combinedStudents = [];
                 snapshots.forEach(snapshot => {
-                    if (snapshot.exists()) {
+                    if (snapshot && snapshot.exists()) {
                         combinedStudents = combinedStudents.concat(Object.values(snapshot.val()));
                     }
                 });
                  
-                allStudents = combinedStudents.sort((a, b) => (a.id || "").localeCompare(b.id || ""));
+                allStudents = combinedStudents.sort((a, b) => (a.id || 0) - (b.id || 0));
                 
                 currentExamData = {
                     class: modalClassSelect.value,
@@ -526,16 +553,16 @@
 
                 renderAllCards();
             } catch (error) {
-                console.error("Gagal memuat data dari Firebase:", error);
+                console.error("Gagal memuat data dari Firebase setelah login:", error);
                 const errorDiv = document.createElement('div');
-                errorDiv.textContent = 'Tidak dapat memuat data. Silakan coba lagi.';
+                errorDiv.textContent = 'Tidak dapat memuat data. Pastikan Anda sudah mengganti kredensial placeholder di dalam kode.';
                 errorDiv.style.color = 'red';
                 errorDiv.style.padding = '10px';
                 errorDiv.style.backgroundColor = '#ffdddd';
                 errorDiv.style.border = '1px solid red';
                 errorDiv.style.borderRadius = '5px';
                 modalLoadingSpinner.parentNode.insertBefore(errorDiv, modalLoadingSpinner.nextSibling);
-                setTimeout(() => errorDiv.remove(), 5000); 
+                setTimeout(() => errorDiv.remove(), 7000); 
             } 
         }
 
