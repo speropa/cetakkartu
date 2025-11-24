@@ -265,17 +265,18 @@
         .date-location {
             position: absolute;
             bottom: 21mm; 
-            left: 48mm; 
+            left: 46mm; /* Digeser ke kiri 2mm (dari 48mm) */
             font-size: 0.7em;
             font-weight: bold; 
             color: var(--main-text-color);
             z-index: 1; 
+            white-space: nowrap; /* Menjaga teks tetap 1 baris */
         }
 
         .signature-details {
             position: absolute;
             bottom: 5mm; 
-            left: 48mm;   
+            left: 46mm;   /* Digeser ke kiri 2mm (dari 48mm) */
             z-index: 1;
             line-height: 1.2;
         }
@@ -291,12 +292,42 @@
         .signature-stamp-img {
             position: absolute;
             bottom: 8mm; 
-            right: 26mm; 
+            right: 28mm; /* Digeser ke kiri 2mm (dari 26mm menjadi 28mm dari kanan) */
             width: 23mm;
             height: 15mm;
             object-fit: contain; 
             z-index: 0;
         }
+
+        /* --- STYLES FOR BARCODE --- */
+        .barcode-area {
+            position: absolute;
+            bottom: 6mm; /* Changed from 4mm to 6mm (moved up 2mm) */
+            left: 4mm;   /* Align to the left side (under "Ruang" visually) */
+            display: flex;
+            flex-direction: row; /* Horizontal layout for image + vertical text */
+            align-items: center;
+            z-index: 20;
+        }
+        .barcode-img {
+            width: 17mm;
+            height: 17mm;
+            object-fit: contain;
+        }
+        .barcode-label {
+            font-size: 0.5em;
+            font-weight: bold;
+            white-space: nowrap;
+            /* Rotate -90 degrees (reading bottom to top) */
+            transform: rotate(-90deg);
+            width: 20mm; /* Width roughly equal to barcode height to center pivot */
+            text-align: center;
+            /* Pull it back because rotation makes it take up wide space in flow */
+            margin-left: -8mm; /* Changed to -8mm (shifted left 2mm from original -6mm) */
+            /* Optional: push down/up if needed */
+            margin-bottom: 0;
+        }
+        /* -------------------------- */
          
         .card-right-ribbon {
             position: absolute; top: 0; right: 0; width: 10mm; height: 100%;
@@ -453,6 +484,7 @@
         const globalDownloadSpinner = document.getElementById('global-download-spinner');
 
         const signatureUrl = 'https://raw.githubusercontent.com/speropa/cetakkartu/refs/heads/main/ttd.png';
+        const barcodeUrl = 'https://raw.githubusercontent.com/speropa/cetakkartu/refs/heads/main/barcode.png';
 
         const padNumber = (num, length) => String(num).padStart(length, '0');
 
@@ -477,6 +509,11 @@
                     <p><span class="label">Ruang</span>:&nbsp;${padNumber(studentRoom, 2)}</p>
                 </div>
                 <div class="signature-footer-area">
+                    <div class="barcode-area">
+                        <img src="${barcodeUrl}" alt="Barcode Ujian" class="barcode-img">
+                        <div class="barcode-label">Scan Link Ujian</div>
+                    </div>
+                    
                     <img src="${signatureUrl}" alt="Tanda Tangan & Cap" class="signature-stamp-img" onerror="this.style.display='none'">
                     <div class="date-location">Pajangan, ${currentExamData.examDate}</div>
                     <div class="signature-details">
