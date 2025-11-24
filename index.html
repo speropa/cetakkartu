@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.67">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cetak Kartu Peserta Ujian</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
@@ -27,13 +27,10 @@
             margin: 0;
             padding: 20px;
             background-color: #e0e0e0;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
+            display: block; 
             min-height: 100vh;
             color: var(--main-text-color);
-            overflow: auto;
+            overflow-x: hidden; 
         }
 
         .main-app-view-container {
@@ -42,6 +39,24 @@
             align-items: center;
             width: 100%;
         }
+
+        /* --- WRAPPER UNTUK SCROLLING DI HP --- */
+        .preview-scroller {
+            width: 100%;
+            overflow-x: auto; 
+            display: flex;
+            justify-content: center; 
+            padding-bottom: 20px;
+            -webkit-overflow-scrolling: touch; 
+        }
+
+        @media (max-width: 22cm) {
+            .preview-scroller {
+                justify-content: flex-start;
+                padding-left: 10px; 
+            }
+        }
+        /* ------------------------------------------ */
 
         .action-buttons-after-render {
             display: flex;
@@ -202,7 +217,8 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            margin-top: 20px;
+            margin: 0 auto; 
+            flex-shrink: 0; 
         }
 
         .card-grid {
@@ -265,18 +281,18 @@
         .date-location {
             position: absolute;
             bottom: 21mm; 
-            left: 46mm; /* Digeser ke kiri 2mm (dari 48mm) */
+            left: 46mm; 
             font-size: 0.7em;
             font-weight: bold; 
             color: var(--main-text-color);
             z-index: 1; 
-            white-space: nowrap; /* Menjaga teks tetap 1 baris */
+            white-space: nowrap; 
         }
 
         .signature-details {
             position: absolute;
             bottom: 5mm; 
-            left: 46mm;   /* Digeser ke kiri 2mm (dari 48mm) */
+            left: 46mm;   
             z-index: 1;
             line-height: 1.2;
         }
@@ -292,7 +308,7 @@
         .signature-stamp-img {
             position: absolute;
             bottom: 8mm; 
-            right: 28mm; /* Digeser ke kiri 2mm (dari 26mm menjadi 28mm dari kanan) */
+            right: 28mm; 
             width: 23mm;
             height: 15mm;
             object-fit: contain; 
@@ -302,10 +318,10 @@
         /* --- STYLES FOR BARCODE --- */
         .barcode-area {
             position: absolute;
-            bottom: 6mm; /* Changed from 4mm to 6mm (moved up 2mm) */
-            left: 4mm;   /* Align to the left side (under "Ruang" visually) */
+            bottom: 6mm; 
+            left: 4mm;   
             display: flex;
-            flex-direction: row; /* Horizontal layout for image + vertical text */
+            flex-direction: row; 
             align-items: center;
             z-index: 20;
         }
@@ -320,11 +336,9 @@
             white-space: nowrap;
             /* Rotate -90 degrees (reading bottom to top) */
             transform: rotate(-90deg);
-            width: 20mm; /* Width roughly equal to barcode height to center pivot */
+            width: 20mm; 
             text-align: center;
-            /* Pull it back because rotation makes it take up wide space in flow */
-            margin-left: -8mm; /* Changed to -8mm (shifted left 2mm from original -6mm) */
-            /* Optional: push down/up if needed */
+            margin-left: -8mm; 
             margin-bottom: 0;
         }
         /* -------------------------- */
@@ -348,7 +362,7 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('https://raw.githubusercontent.com/smp2pajangan/gambar/refs/heads/main/logosmpn2pjg.png');
             background-repeat: no-repeat;
-            background-position: 3.5cm center; /* Geser ke kanan 3.5cm */
+            background-position: 3.5cm center; 
             background-size: 110mm auto;
             opacity: 0.05; pointer-events: none; z-index: 0;
         }
@@ -362,13 +376,17 @@
                 <i class="fas fa-file-pdf"></i> UNDUH KARTU UJIAN
             </button>
         </div>
-        <div id="contentToDownload" class="page-a4">
-            <div class="card-grid" id="studentCardGrid">
+        
+        <div class="preview-scroller">
+            <div id="contentToDownload" class="page-a4">
+                <div class="card-grid" id="studentCardGrid">
+                </div>
             </div>
         </div>
+        
     </div>
 
-    <div id="exam-data-modal" class="modal-overlay" style="display: flex;">
+    <div id="exam-data-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <span class="close-button" id="close-modal-btn">&times;</span>
             <h2>Isilah Data Kartu Ujian</h2>
@@ -384,30 +402,30 @@
                 </div>
                 <div class="modal-input-group">
                     <label for="modal-academic-year-input">Tahun Ajaran:</label>
-                    <input type="text" id="modal-academic-year-input" value="2025/2026">
+                    <input type="text" id="modal-academic-year-input" value="">
                 </div>
                 <div class="modal-input-group">
                     <label for="modal-exam-title-input">Judul Ujian:</label>
-                    <input type="text" id="modal-exam-title-input" value="ASSESMEN SEMESTER AKHIR TAHUN">
+                    <input type="text" id="modal-exam-title-input" value="">
                 </div>
                 <div class="modal-input-group">
                     <label for="modal-exam-date-input">Tanggal Ujian:</label>
-                    <input type="text" id="modal-exam-date-input" value="12 Desember 2025">
+                    <input type="text" id="modal-exam-date-input" value="">
                 </div>
                 <div class="modal-input-group">
                     <label for="modal-principal-name-input">Nama Kepala Sekolah:</label>
-                    <input type="text" id="modal-principal-name-input" value="Heru Supranoto, S.Pd.">
+                    <input type="text" id="modal-principal-name-input" value="">
                 </div>
                 <div class="modal-input-group">
                     <label for="modal-nip-number-input">NIP:</label>
-                    <input type="text" id="modal-nip-number-input" value="196609271993121003">
+                    <input type="text" id="modal-nip-number-input" value="">
                 </div>
                 <button id="modal-save-btn" class="action-button"><i class="fas fa-save"></i> SIMPAN</button>
             </div>
 
             <div id="modal-loading-spinner" class="spinner-overlay" style="display: none;">
                 <i class="fas fa-spinner fa-spin fa-3x"></i>
-                <p>Memuat data dan merender kartu...</p>
+                <p>Memuat data...</p>
             </div>
         </div>
     </div>
@@ -419,14 +437,13 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+        import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, initializeAuth, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
-        // --- PENTING: GANTI DENGAN KREDENSIAL ANDA ---
-        // Pastikan email dan password ini valid untuk SEMUA proyek Firebase Anda.
         const FIREBASE_EMAIL = "speropa@gmail.com";
         const FIREBASE_PASSWORD = "Pajangan201184*";
-        // ---------------------------------------------
+        // KUNCI DATABASE MASTER UNTUK PENGATURAN
+        const SETTINGS_SOURCE_KEY = '7ABC';
 
         const allFirebaseConfigs = {
             '7ABC': { apiKey: "AIzaSyBAKwT7JY_HGnvK6h3u30-dfgRPXfef8l8", authDomain: "abc-a13ea.firebaseapp.com", projectId: "abc-a13ea", databaseURL: "https://abc-a13ea-default-rtdb.firebaseio.com", storageBucket: "abc-a13ea.firebasestorage.app", messagingSenderId: "1052966795599", appId: "1:1052966795599:web:d4d331199ca9081321ed3a" },
@@ -450,10 +467,17 @@
 
         const firebaseAuths = {};
         for (const key in firebaseApps) {
-            firebaseAuths[key] = getAuth(firebaseApps[key]);
+            try {
+                firebaseAuths[key] = initializeAuth(firebaseApps[key], {
+                    persistence: inMemoryPersistence
+                });
+            } catch (e) {
+                firebaseAuths[key] = getAuth(firebaseApps[key]);
+            }
         }
 
         let allStudents = [];
+        // Data default awal (jika database kosong)
         let currentExamData = {
             class: '7',
             academicYear: '2025/2026',
@@ -541,37 +565,84 @@
             });
         }
 
+        // FUNGSI KHUSUS UNTUK MEMUAT SETTINGS SAAT STARTUP
+        async function initializeSettings() {
+            showLoadingSpinner(modalLoadingSpinner); // Tampilkan spinner di modal
+            examDataModal.style.display = 'flex';    // Pastikan modal terlihat
+            modalInputGrid.style.display = 'none';   // Sembunyikan input dulu
+            modalSaveBtn.style.display = 'none';
+
+            try {
+                const settingsApp = firebaseApps[SETTINGS_SOURCE_KEY];
+                const settingsAuth = firebaseAuths[SETTINGS_SOURCE_KEY];
+                const settingsDb = getDatabase(settingsApp);
+                
+                if (!settingsAuth.currentUser) {
+                    await signInWithEmailAndPassword(settingsAuth, FIREBASE_EMAIL, FIREBASE_PASSWORD);
+                }
+                
+                const settingsSnapshot = await get(ref(settingsDb, 'settings/'));
+                if (settingsSnapshot.exists()) {
+                    const fetchedSettings = settingsSnapshot.val();
+                    
+                    // Update variabel global currentExamData
+                    currentExamData.academicYear = fetchedSettings.academicYear || currentExamData.academicYear;
+                    currentExamData.examTitle = fetchedSettings.examTitle || currentExamData.examTitle;
+                    currentExamData.examDate = fetchedSettings.examDate || currentExamData.examDate;
+                    currentExamData.principalName = fetchedSettings.principalName || currentExamData.principalName;
+                    currentExamData.nipNumber = fetchedSettings.nipNumber || currentExamData.nipNumber;
+                }
+            } catch (err) {
+                console.error("Gagal inisialisasi settings dari 7ABC:", err);
+                // Lanjut saja menggunakan nilai default jika gagal
+            }
+
+            // Update UI Input dengan data yang baru didapat (atau default)
+            modalAcademicYearInput.value = currentExamData.academicYear;
+            modalExamTitleInput.value = currentExamData.examTitle;
+            modalExamDateInput.value = currentExamData.examDate;
+            modalPrincipalNameInput.value = currentExamData.principalName;
+            modalNipNumberInput.value = currentExamData.nipNumber;
+            modalClassSelect.value = '7'; // Default class
+
+            // Tampilkan form
+            hideLoadingSpinner(modalLoadingSpinner);
+            modalInputGrid.style.display = 'grid';
+            modalSaveBtn.style.display = 'block';
+        }
+
         async function loadDataAndRender() {
             allStudents = [];
+            // Kita TIDAK mengambil settings di sini lagi karena settings sudah diambil di awal
+            // atau akan diambil ulang jika user mengklik SIMPAN.
+            // Tapi jika user hanya GANTI KELAS tanpa ganti settings, kita pakai currentExamData yang sudah ada.
          
             const selectedGrade = modalClassSelect.value;
             const dbGroups = gradeToDbGroupMap[selectedGrade];
 
-            const fetchPromises = dbGroups.map(async (groupKey) => {
+            // 2. AMBIL SISWA DARI KELAS YANG DIPILIH
+            const fetchStudentPromises = dbGroups.map(async (groupKey) => {
                 const app = firebaseApps[groupKey];
                 const auth = firebaseAuths[groupKey];
                 const db = getDatabase(app);
 
                 try {
-                    // Hanya login jika belum ada user yang aktif
                     if (!auth.currentUser) {
                         await signInWithEmailAndPassword(auth, FIREBASE_EMAIL, FIREBASE_PASSWORD);
-                        console.log(`Login ke ${groupKey} berhasil.`);
                     }
+                    const snapshot = await get(ref(db, 'students/'));
+                    return snapshot;
                 } catch (error) {
-                    console.error(`Gagal login ke Firebase ${groupKey}:`, error.message);
-                    alert(`Gagal login ke database ${groupKey}. Periksa kredensial di kode dan aturan keamanan Firebase Anda.`);
+                    console.error(`Gagal mengambil data siswa dari ${groupKey}:`, error.message);
                     return null;
                 }
-                
-                // Setelah login (atau jika sudah login), ambil data
-                return get(ref(db, 'students/'));
             });
 
             try {
-                const snapshots = await Promise.all(fetchPromises);
+                const studentSnapshots = await Promise.all(fetchStudentPromises);
+                
                 let combinedStudents = [];
-                snapshots.forEach(snapshot => {
+                studentSnapshots.forEach(snapshot => {
                     if (snapshot && snapshot.exists()) {
                         combinedStudents = combinedStudents.concat(Object.values(snapshot.val()));
                     }
@@ -579,46 +650,26 @@
                  
                 allStudents = combinedStudents.sort((a, b) => (a.id || 0) - (b.id || 0));
                 
-                currentExamData = {
-                    class: modalClassSelect.value,
-                    academicYear: modalAcademicYearInput.value,
-                    examTitle: modalExamTitleInput.value,
-                    examDate: modalExamDateInput.value,
-                    principalName: modalPrincipalNameInput.value,
-                    nipNumber: modalNipNumberInput.value
-                };
+                // Update currentExamData class agar sesuai pilihan
+                currentExamData.class = selectedGrade;
 
                 renderAllCards();
             } catch (error) {
-                console.error("Gagal memuat data dari Firebase setelah login:", error);
-                const errorDiv = document.createElement('div');
-                errorDiv.textContent = 'Tidak dapat memuat data. Pastikan Anda sudah mengganti kredensial placeholder di dalam kode.';
-                errorDiv.style.color = 'red';
-                errorDiv.style.padding = '10px';
-                errorDiv.style.backgroundColor = '#ffdddd';
-                errorDiv.style.border = '1px solid red';
-                errorDiv.style.borderRadius = '5px';
-                modalLoadingSpinner.parentNode.insertBefore(errorDiv, modalLoadingSpinner.nextSibling);
-                setTimeout(() => errorDiv.remove(), 7000); 
+                console.error("Kesalahan umum saat memuat data:", error);
+                alert("Terjadi kesalahan saat memuat data siswa.");
+                hideLoadingSpinner(modalLoadingSpinner);
             } 
         }
 
         function showModal(prefill = false) {
-            if (prefill) {
-                modalClassSelect.value = currentExamData.class;
-                modalAcademicYearInput.value = currentExamData.academicYear;
-                modalExamTitleInput.value = currentExamData.examTitle;
-                modalExamDateInput.value = currentExamData.examDate;
-                modalPrincipalNameInput.value = currentExamData.principalName;
-                modalNipNumberInput.value = currentExamData.nipNumber;
-            } else {
-                modalClassSelect.value = '7';
-                modalAcademicYearInput.value = '2025/2026';
-                modalExamTitleInput.value = 'ASSESMEN SEMESTER AKHIR TAHUN';
-                modalExamDateInput.value = '12 Desember 2025';
-                modalPrincipalNameInput.value = 'Heru Supranoto, S.Pd.';
-                modalNipNumberInput.value = '196609271993121003';
-            }
+            // Selalu update input dengan data terakhir yang ada di memori
+            modalClassSelect.value = currentExamData.class || '7';
+            modalAcademicYearInput.value = currentExamData.academicYear;
+            modalExamTitleInput.value = currentExamData.examTitle;
+            modalExamDateInput.value = currentExamData.examDate;
+            modalPrincipalNameInput.value = currentExamData.principalName;
+            modalNipNumberInput.value = currentExamData.nipNumber;
+
             examDataModal.style.display = 'flex';
             hideLoadingSpinner(modalLoadingSpinner);
             modalInputGrid.style.display = 'grid';
@@ -646,12 +697,49 @@
             modalInputGrid.style.display = 'none';
             modalSaveBtn.style.display = 'none';
 
-            await loadDataAndRender();
+            // Update Data di Memori
+            currentExamData.academicYear = modalAcademicYearInput.value;
+            currentExamData.examTitle = modalExamTitleInput.value;
+            currentExamData.examDate = modalExamDateInput.value;
+            currentExamData.principalName = modalPrincipalNameInput.value;
+            currentExamData.nipNumber = modalNipNumberInput.value;
+            currentExamData.class = modalClassSelect.value;
 
-            hideLoadingSpinner(modalLoadingSpinner);
-            hideModal();
+            const newDataToSave = {
+                academicYear: currentExamData.academicYear,
+                examTitle: currentExamData.examTitle,
+                examDate: currentExamData.examDate,
+                principalName: currentExamData.principalName,
+                nipNumber: currentExamData.nipNumber
+            };
 
-            mainAppViewContainer.style.display = 'flex';
+            // HANYA SIMPAN KE 7ABC
+            try {
+                const app = firebaseApps[SETTINGS_SOURCE_KEY];
+                const auth = firebaseAuths[SETTINGS_SOURCE_KEY];
+                const db = getDatabase(app);
+
+                if (!auth.currentUser) {
+                    await signInWithEmailAndPassword(auth, FIREBASE_EMAIL, FIREBASE_PASSWORD);
+                }
+                
+                await set(ref(db, 'settings/'), newDataToSave);
+                
+                // Setelah simpan, load data siswa (render ulang kartu dengan data baru)
+                await loadDataAndRender();
+                
+                hideLoadingSpinner(modalLoadingSpinner);
+                hideModal();
+                mainAppViewContainer.style.display = 'flex';
+
+            } catch (error) {
+                console.error("Gagal menyimpan ke 7ABC:", error);
+                alert("GAGAL menyimpan data: " + error.message);
+                
+                hideLoadingSpinner(modalLoadingSpinner);
+                modalInputGrid.style.display = 'grid';
+                modalSaveBtn.style.display = 'block';
+            }
         });
 
         downloadCardsBtn.addEventListener('click', async () => {
@@ -673,9 +761,11 @@
             }
         });
 
+        // SAAT APLIKASI DIMULAI:
         document.addEventListener('DOMContentLoaded', () => {
             mainAppViewContainer.style.display = 'none';
-            examDataModal.style.display = 'flex';
+            // PANGGIL FUNGSI INISIALISASI SETTINGS
+            initializeSettings();
         });
     </script>
     <script>
