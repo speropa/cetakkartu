@@ -443,33 +443,91 @@
         const FIREBASE_EMAIL = "speropa@gmail.com";
         const FIREBASE_PASSWORD = "Pajangan201184*";
 
-        // --- KONFIGURASI FIREBASE TUNGGAL (SETUP) ---
-const firebaseConfig = {
-  apiKey: "AIzaSyBAKwT7JY_HGnvK6h3u30-dfgRPXfef8l8",
-  authDomain: "abc-a13ea.firebaseapp.com",
-  databaseURL: "https://abc-a13ea-default-rtdb.firebaseio.com",
-  projectId: "abc-a13ea",
-  storageBucket: "abc-a13ea.firebasestorage.app",
-  messagingSenderId: "1052966795599",
-  appId: "1:1052966795599:web:d4d331199ca9081321ed3a"
-};
+        // --- KONFIGURASI MULTI-FIREBASE (SESUAI ADMIN) ---
+        
+        // 1. FIREBASE ATURAN (Untuk Settings & Config)
+        const configAturan = {
+            apiKey: "AIzaSyAoH-kHpL15GHnFa41ZdG7dWFUsUZ4QJKc",
+            authDomain: "aturan-694fe.firebaseapp.com",
+            databaseURL: "https://aturan-694fe-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "aturan-694fe",
+            storageBucket: "aturan-694fe.firebasestorage.app",
+            messagingSenderId: "1008762962672",
+            appId: "1:1008762962672:web:57815d4f3c49f211ebf835"
+        };
 
-        const app = initializeApp(firebaseConfig);
-        
-        // Inisialisasi Auth dengan persistensi memori untuk menghindari error di beberapa browser
-        let auth;
-        try {
-            auth = initializeAuth(app, {
-                persistence: inMemoryPersistence
-            });
-        } catch (e) {
-            auth = getAuth(app);
+        // 2. FIREBASE KELAS 7
+        const config7 = {
+            apiKey: "AIzaSyBkhBZw3oADXUAJ9FXY9-g7XBsSmQhzZVk",
+            authDomain: "def-ab5ee.firebaseapp.com",
+            databaseURL: "https://def-ab5ee-default-rtdb.firebaseio.com",
+            projectId: "def-ab5ee",
+            storageBucket: "def-ab5ee.firebasestorage.app",
+            messagingSenderId: "129712840107",
+            appId: "1:129712840107:web:ab10576fed95f735dd46ee"
+        };
+
+        // 3. FIREBASE KELAS 8
+        const config8 = {
+            apiKey: "AIzaSyAwilwwwEJ2MAdSf09BotxNH-z6RiXaHXY",
+            authDomain: "abc-43e73.firebaseapp.com",
+            databaseURL: "https://abc-43e73-default-rtdb.firebaseio.com",
+            projectId: "abc-43e73",
+            storageBucket: "abc-43e73.firebasestorage.app",
+            messagingSenderId: "1043754727577",
+            appId: "1:1043754727577:web:56c3732bf2a6ac900c2008"
+        };
+
+        // 4. FIREBASE KELAS 9
+        const config9 = {
+            apiKey: "AIzaSyBZ6JR3ggnUiZFQ-wdrewbfhzMUwFaGGzQ",
+            authDomain: "abc-d272a.firebaseapp.com",
+            databaseURL: "https://abc-d272a-default-rtdb.firebaseio.com",
+            projectId: "abc-d272a",
+            storageBucket: "abc-d272a.firebasestorage.app",
+            messagingSenderId: "1036605132828",
+            appId: "1:1036605132828:web:2b59f91290d50afe304fd9"
+        };
+
+        // Inisialisasi Semua App
+        const appAturan = initializeApp(configAturan, "appAturan");
+        const app7 = initializeApp(config7, "app7");
+        const app8 = initializeApp(config8, "app8");
+        const app9 = initializeApp(config9, "app9");
+
+        // Auth & DB Instances
+        const authAturan = getAuth(appAturan);
+        const dbAturan = getDatabase(appAturan);
+
+        const auth7 = getAuth(app7);
+        const db7 = getDatabase(app7);
+
+        const auth8 = getAuth(app8);
+        const db8 = getDatabase(app8);
+
+        const auth9 = getAuth(app9);
+        const db9 = getDatabase(app9);
+
+        // Fungsi Global Login Multi-DB
+        async function authenticateAll() {
+            try {
+                // Login ke semua instance secara paralel
+                await Promise.all([
+                    signInWithEmailAndPassword(authAturan, FIREBASE_EMAIL, FIREBASE_PASSWORD),
+                    signInWithEmailAndPassword(auth7, FIREBASE_EMAIL, FIREBASE_PASSWORD),
+                    signInWithEmailAndPassword(auth8, FIREBASE_EMAIL, FIREBASE_PASSWORD),
+                    signInWithEmailAndPassword(auth9, FIREBASE_EMAIL, FIREBASE_PASSWORD)
+                ]);
+                console.log("Berhasil login ke semua server (Aturan, 7, 8, 9).");
+                return true;
+            } catch (err) {
+                console.error("Gagal login multi-server:", err);
+                alert("Gagal autentikasi ke server data. Cek koneksi atau password.");
+                return false;
+            }
         }
-        
-        const db = getDatabase(app);
 
         let allStudents = [];
-        // Data default awal (jika database kosong)
         let currentExamData = {
             class: '7',
             academicYear: '2025/2026',
@@ -557,23 +615,23 @@ const firebaseConfig = {
             });
         }
 
-        // FUNGSI KHUSUS UNTUK MEMUAT SETTINGS SAAT STARTUP
+        // FUNGSI MEMUAT SETTINGS DARI DB ATURAN
         async function initializeSettings() {
-            showLoadingSpinner(modalLoadingSpinner); // Tampilkan spinner di modal
-            examDataModal.style.display = 'flex';    // Pastikan modal terlihat
-            modalInputGrid.style.display = 'none';   // Sembunyikan input dulu
+            showLoadingSpinner(modalLoadingSpinner); 
+            examDataModal.style.display = 'flex';    
+            modalInputGrid.style.display = 'none';   
             modalSaveBtn.style.display = 'none';
 
             try {
-                if (!auth.currentUser) {
-                    await signInWithEmailAndPassword(auth, FIREBASE_EMAIL, FIREBASE_PASSWORD);
+                if (!authAturan.currentUser) {
+                    await authenticateAll();
                 }
                 
-                const settingsSnapshot = await get(ref(db, 'settings/'));
+                // Ambil settings dari DB ATURAN
+                const settingsSnapshot = await get(ref(dbAturan, 'settings/print_card_settings'));
                 if (settingsSnapshot.exists()) {
                     const fetchedSettings = settingsSnapshot.val();
                     
-                    // Update variabel global currentExamData
                     currentExamData.academicYear = fetchedSettings.academicYear || currentExamData.academicYear;
                     currentExamData.examTitle = fetchedSettings.examTitle || currentExamData.examTitle;
                     currentExamData.examDate = fetchedSettings.examDate || currentExamData.examDate;
@@ -584,7 +642,7 @@ const firebaseConfig = {
                 console.error("Gagal inisialisasi settings:", err);
             }
 
-            // Update UI Input dengan data yang baru didapat (atau default)
+            // Update UI Input
             modalAcademicYearInput.value = currentExamData.academicYear;
             modalExamTitleInput.value = currentExamData.examTitle;
             modalExamDateInput.value = currentExamData.examDate;
@@ -598,24 +656,32 @@ const firebaseConfig = {
             modalSaveBtn.style.display = 'block';
         }
 
+        // FUNGSI LOAD DATA SISWA DARI DB SESUAI PILIHAN KELAS
         async function loadDataAndRender() {
             allStudents = [];
-            const selectedGrade = modalClassSelect.value; // e.g., "7", "8", "9"
+            const selectedGrade = modalClassSelect.value; // "7", "8", "9"
 
             try {
-                if (!auth.currentUser) {
-                    await signInWithEmailAndPassword(auth, FIREBASE_EMAIL, FIREBASE_PASSWORD);
+                if (!authAturan.currentUser) {
+                    await authenticateAll();
                 }
-                
-                // Ambil semua data siswa dari database tunggal
-                const snapshot = await get(ref(db, 'students/'));
+
+                // TENTUKAN DB MANA YANG AKAN DIAMBIL BERDASARKAN PILIHAN
+                let targetDb;
+                if (selectedGrade === '7') targetDb = db7;
+                else if (selectedGrade === '8') targetDb = db8;
+                else if (selectedGrade === '9') targetDb = db9;
+                else targetDb = db7; // Fallback
+
+                // Ambil data siswa dari DB yang sesuai
+                const snapshot = await get(ref(targetDb, 'students/'));
                 
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     const allData = Object.values(data);
                     
-                    // Filter siswa berdasarkan kelas yang dimulai dengan angka grade yang dipilih
-                    // Contoh: Jika pilih "7", ambil kelas "7A", "7B", dsb.
+                    // Filter siswa (untuk memastikan hanya kelas yang relevan, meski DB sudah dipisah)
+                    // Dan juga untuk sorting
                     allStudents = allData.filter(student => {
                         if (!student.class) return false;
                         return student.class.startsWith(selectedGrade);
@@ -637,7 +703,6 @@ const firebaseConfig = {
         }
 
         function showModal(prefill = false) {
-            // Selalu update input dengan data terakhir yang ada di memori
             modalClassSelect.value = currentExamData.class || '7';
             modalAcademicYearInput.value = currentExamData.academicYear;
             modalExamTitleInput.value = currentExamData.examTitle;
@@ -688,18 +753,18 @@ const firebaseConfig = {
                 nipNumber: currentExamData.nipNumber
             };
 
-            // SIMPAN KE DATABASE TUNGGAL (SETUP)
+            // SIMPAN SETTINGS KE DB ATURAN
             try {
-                if (!auth.currentUser) {
-                    await signInWithEmailAndPassword(auth, FIREBASE_EMAIL, FIREBASE_PASSWORD);
+                if (!authAturan.currentUser) {
+                    await authenticateAll();
                 }
                 
-                await set(ref(db, 'settings/'), newDataToSave);
+                await set(ref(dbAturan, 'settings/print_card_settings'), newDataToSave);
                 
-                // Setelah simpan, load data siswa (render ulang kartu dengan data baru)
+                // Setelah simpan, load data siswa dari DB yang dipilih
                 await loadDataAndRender();
                 
-                alert("Data BERHASIL disimpan ke database!");
+                alert("Data BERHASIL disimpan ke Database Aturan dan kartu dimuat!");
                 hideLoadingSpinner(modalLoadingSpinner);
                 hideModal();
                 mainAppViewContainer.style.display = 'flex';
